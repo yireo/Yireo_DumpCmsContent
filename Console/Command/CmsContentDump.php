@@ -2,6 +2,7 @@
 
 namespace Yireo\DumpCmsContent\Console\Command;
 
+use Magento\Framework\Console\Cli;
 use Magento\Framework\Exception\FileSystemException;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
@@ -43,12 +44,13 @@ class CmsContentDump extends Command
      * @param InputInterface $input
      * @param OutputInterface $output
      *
-     * @return void
+     * @return int
      * @throws FileSystemException
      */
-    protected function execute(InputInterface $input, OutputInterface $output): void
+    protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $output->writeln('Dumping CMS content to var/cms-output');
         $this->dumpCmsContent->execute();
+        return Cli::RETURN_SUCCESS;
     }
 }
