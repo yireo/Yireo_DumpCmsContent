@@ -23,7 +23,7 @@ class CmsContentDump extends Command
      */
     public function __construct(
         DumpCmsContent $dumpCmsContent,
-        string $name = null
+        ?string $name = null
     ) {
         parent::__construct($name);
         $this->dumpCmsContent = $dumpCmsContent;
