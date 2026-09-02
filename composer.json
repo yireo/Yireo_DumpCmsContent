@@ -4,7 +4,8 @@
     "description": "N/A",
     "type": "magento2-module",
     "require": {
-        "magento/framework": "^103.0"
+        "magento/framework": "^103.0",
+        "php": ">=8.2 <8.6"
     },
     "license": "OSL-3.0",
     "autoload": {
