@@ -1,5 +1,7 @@
 {
     "module_name": "Yireo_DumpCmsContent",
     "composer_name": "yireo/magento2-dump-cms-content",
-    "sequence": []
+    "sequence": [],
+    "phpcs_severity": "7",
+    "phpstan_level": "2"
 }
