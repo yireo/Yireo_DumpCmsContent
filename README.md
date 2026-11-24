@@ -26,6 +26,21 @@ module.exports = {
 }
 ```
 
+## Usage
+```bash
+bin/magento cms:dump
+bin/magento cms:dump --include-inactive
+```
+
+By default, only active CMS blocks and CMS pages are dumped. Use `--include-inactive` to also dump disabled content.
+
+Every file is named `cms-block-{id}-{identifier}.html` or `cms-page-{id}-{identifier}.html`. All characters of the identifier except `a-z`, `0-9`, `_` and `-` are replaced with `_`, so all files end up directly in `var/cms-output`. Entries without content are skipped.
+
+## Security notes
+- The folder `var/cms-output` is emptied on every run. Do not store anything else in it.
+- The command refuses to write when `var/cms-output` is a symlink pointing elsewhere.
+- The dump contains raw CMS content. Do not commit `var/cms-output` to a repository and make sure it is not publicly accessible via the webserver.
+
 ## Current status
 
 <!-- badges.test.start -->
