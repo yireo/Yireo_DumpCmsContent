@@ -2,41 +2,43 @@
 
 namespace Yireo\DumpCmsContent\DataProvider;
 
-use Magento\Cms\Model\Block;
-use Magento\Cms\Model\BlockRepository;
+use Generator;
+use Magento\Cms\Api\BlockRepositoryInterface;
+use Magento\Cms\Api\Data\BlockInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\Exception\LocalizedException;
 
 class CmsBlockProvider
 {
-    /**
-     * @var BlockRepository
-     */
-    private $blockRepository;
+    private const PAGE_SIZE = 100;
 
-    /**
-     * @var SearchCriteriaBuilder
-     */
-    private $searchCriteriaBuilder;
-
-    /**
-     * CmsBlockProvider constructor.
-     * @param BlockRepository $blockRepository
-     * @param SearchCriteriaBuilder $searchCriteriaBuilder
-     */
     public function __construct(
-        BlockRepository $blockRepository,
-        SearchCriteriaBuilder $searchCriteriaBuilder
+        private readonly BlockRepositoryInterface $blockRepository,
+        private readonly SearchCriteriaBuilder $searchCriteriaBuilder
     ) {
-        $this->blockRepository = $blockRepository;
-        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
     }
 
     /**
-     * @return Block[]
+     * @return Generator<BlockInterface>
+     * @throws LocalizedException
      */
-    public function getCmsBlocks(): array
+    public function getCmsBlocks(bool $includeInactive = false): Generator
     {
-        $searchCriteria = $this->searchCriteriaBuilder->create();
-        return $this->blockRepository->getList($searchCriteria)->getItems();
+        $currentPage = 1;
+        do {
+            if (!$includeInactive) {
+                $this->searchCriteriaBuilder->addFilter(BlockInterface::IS_ACTIVE, 1);
+            }
+
+            $this->searchCriteriaBuilder->setPageSize(self::PAGE_SIZE);
+            $this->searchCriteriaBuilder->setCurrentPage($currentPage);
+            $searchResults = $this->blockRepository->getList($this->searchCriteriaBuilder->create());
+
+            foreach ($searchResults->getItems() as $cmsBlock) {
+                yield $cmsBlock;
+            }
+
+            $currentPage++;
+        } while (($currentPage - 1) * self::PAGE_SIZE < $searchResults->getTotalCount());
     }
 }

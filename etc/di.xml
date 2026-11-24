@@ -10,4 +10,10 @@
             </argument>
         </arguments>
     </type>
+
+    <type name="Yireo\DumpCmsContent\Console\Command\CmsContentDump">
+        <arguments>
+            <argument name="dumpCmsContent" xsi:type="object">Yireo\DumpCmsContent\Util\DumpCmsContent\Proxy</argument>
+        </arguments>
+    </type>
 </config>

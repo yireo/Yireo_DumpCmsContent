@@ -3,56 +3,64 @@
 namespace Yireo\DumpCmsContent\Util;
 
 use Magento\Framework\Exception\FileSystemException;
+use Magento\Framework\Exception\LocalizedException;
 use Yireo\DumpCmsContent\DataProvider\CmsBlockProvider;
 use Yireo\DumpCmsContent\DataProvider\CmsPageProvider;
 use Yireo\DumpCmsContent\Writer\DumpWriter;
 
 class DumpCmsContent
 {
-    /**
-     * @var CmsBlockProvider
-     */
-    private $cmsBlockProvider;
-
-    /**
-     * @var CmsPageProvider
-     */
-    private $cmsPageProvider;
-
-    /**
-     * @var DumpWriter
-     */
-    private $dumpWriter;
-
-    /**
-     * DumpCmsContent constructor.
-     * @param CmsBlockProvider $cmsBlockProvider
-     * @param CmsPageProvider $cmsPageProvider
-     * @param DumpWriter $dumpWriter
-     */
     public function __construct(
-        CmsBlockProvider $cmsBlockProvider,
-        CmsPageProvider $cmsPageProvider,
-        DumpWriter $dumpWriter
+        private readonly CmsBlockProvider $cmsBlockProvider,
+        private readonly CmsPageProvider $cmsPageProvider,
+        private readonly DumpWriter $dumpWriter,
+        private readonly FileNameGenerator $fileNameGenerator
     ) {
-        $this->cmsBlockProvider = $cmsBlockProvider;
-        $this->cmsPageProvider = $cmsPageProvider;
-        $this->dumpWriter = $dumpWriter;
+    }
+
+    /**
+     * @return int Number of files written
+     * @throws FileSystemException
+     * @throws LocalizedException
+     */
+    public function execute(bool $includeInactive = false): int
+    {
+        $this->dumpWriter->clean();
+        $count = 0;
+
+        foreach ($this->cmsBlockProvider->getCmsBlocks($includeInactive) as $cmsBlock) {
+            $count += $this->write(
+                'cms-block',
+                (int)$cmsBlock->getId(),
+                (string)$cmsBlock->getIdentifier(),
+                (string)$cmsBlock->getContent()
+            );
+        }
+
+        foreach ($this->cmsPageProvider->getCmsPages($includeInactive) as $cmsPage) {
+            $count += $this->write(
+                'cms-page',
+                (int)$cmsPage->getId(),
+                (string)$cmsPage->getIdentifier(),
+                (string)$cmsPage->getContent()
+            );
+        }
+
+        return $count;
     }
 
     /**
      * @throws FileSystemException
      */
-    public function execute()
+    private function write(string $prefix, int $entityId, string $identifier, string $content): int
     {
-        foreach ($this->cmsBlockProvider->getCmsBlocks() as $cmsBlock) {
-            $cmsBlockId = 'cms-block-' . $cmsBlock->getIdentifier();
-            $this->dumpWriter->writeContent($cmsBlockId, $cmsBlock->getContent());
+        if ($content === '') {
+            return 0;
         }
 
-        foreach ($this->cmsPageProvider->getCmsPages() as $cmsPage) {
-            $cmsPageId = 'cms-page-' . $cmsPage->getIdentifier();
-            $this->dumpWriter->writeContent($cmsPageId, $cmsPage->getContent());
-        }
+        $fileName = $this->fileNameGenerator->generate($prefix, $entityId, $identifier);
+        $this->dumpWriter->writeContent($fileName, $content);
+
+        return 1;
     }
 }

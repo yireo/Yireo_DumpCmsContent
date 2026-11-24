@@ -2,41 +2,43 @@
 
 namespace Yireo\DumpCmsContent\DataProvider;
 
-use Magento\Cms\Model\Page;
-use Magento\Cms\Model\PageRepository;
+use Generator;
+use Magento\Cms\Api\Data\PageInterface;
+use Magento\Cms\Api\PageRepositoryInterface;
 use Magento\Framework\Api\SearchCriteriaBuilder;
+use Magento\Framework\Exception\LocalizedException;
 
 class CmsPageProvider
 {
-    /**
-     * @var PageRepository
-     */
-    private $pageRepository;
+    private const PAGE_SIZE = 100;
 
-    /**
-     * @var SearchCriteriaBuilder
-     */
-    private $searchCriteriaBuilder;
-
-    /**
-     * CmsPageProvider constructor.
-     * @param PageRepository $pageRepository
-     * @param SearchCriteriaBuilder $searchCriteriaBuilder
-     */
     public function __construct(
-        PageRepository $pageRepository,
-        SearchCriteriaBuilder $searchCriteriaBuilder
+        private readonly PageRepositoryInterface $pageRepository,
+        private readonly SearchCriteriaBuilder $searchCriteriaBuilder
     ) {
-        $this->pageRepository = $pageRepository;
-        $this->searchCriteriaBuilder = $searchCriteriaBuilder;
     }
 
     /**
-     * @return Page[]
+     * @return Generator<PageInterface>
+     * @throws LocalizedException
      */
-    public function getCmsPages(): array
+    public function getCmsPages(bool $includeInactive = false): Generator
     {
-        $searchCriteria = $this->searchCriteriaBuilder->create();
-        return $this->pageRepository->getList($searchCriteria)->getItems();
+        $currentPage = 1;
+        do {
+            if (!$includeInactive) {
+                $this->searchCriteriaBuilder->addFilter(PageInterface::IS_ACTIVE, 1);
+            }
+
+            $this->searchCriteriaBuilder->setPageSize(self::PAGE_SIZE);
+            $this->searchCriteriaBuilder->setCurrentPage($currentPage);
+            $searchResults = $this->pageRepository->getList($this->searchCriteriaBuilder->create());
+
+            foreach ($searchResults->getItems() as $cmsPage) {
+                yield $cmsPage;
+            }
+
+            $currentPage++;
+        } while (($currentPage - 1) * self::PAGE_SIZE < $searchResults->getTotalCount());
     }
 }
