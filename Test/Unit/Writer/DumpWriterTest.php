@@ -29,7 +29,7 @@ class DumpWriterTest extends TestCase
         foreach ($invalidFileNames as $fileName) {
             try {
                 $dumpWriter->writeContent($fileName, 'content');
-                $this->fail('File name was accepted: ' . json_encode($fileName));
+                $this->fail('File name was accepted: ' . addcslashes($fileName, "\0..\37"));
             } catch (FileSystemException $exception) {
                 $this->assertStringContainsString('Invalid CMS dump file name', $exception->getMessage());
             }
