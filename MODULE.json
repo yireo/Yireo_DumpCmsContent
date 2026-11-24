@@ -4,6 +4,6 @@
     "sequence": [
         "Magento_Cms"
     ],
-    "phpcs_severity": "7",
-    "phpstan_level": "2"
+    "phpcs_severity": "6",
+    "phpstan_level": "8"
 }
