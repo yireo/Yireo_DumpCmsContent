@@ -5,5 +5,29 @@
         "Magento_Cms"
     ],
     "phpcs_severity": "6",
-    "phpstan_level": "8"
+    "phpstan_level": "8",
+    "php_versions": [
+        "8.1",
+        "8.2",
+        "8.3",
+        "8.4"
+    ],
+    "skip_magento_versions": [],
+    "skip_css_utils": false,
+    "modules": [
+        "Magento_Cms",
+        "Magento_Csp",
+        "Magento_Directory",
+        "Magento_MediaGalleryUiApi",
+        "Magento_Store",
+        "Magento_Theme",
+        "Magento_Variable"
+    ],
+    "components": [],
+    "config": [],
+    "tests": {
+        "unit": 4,
+        "integration": 5,
+        "functional": 0
+    }
 }
